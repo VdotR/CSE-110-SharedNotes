@@ -84,10 +84,9 @@ public class NoteAPI {
             var body = response.body().string();
             Log.i("GET", body);
             return Note.fromJSON(body);
-
         } catch (Exception e) {
             e.printStackTrace();
-            throw e;
+            return null;
         }
     }
 
