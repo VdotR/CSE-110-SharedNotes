@@ -7,11 +7,10 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
+import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class NoteRepository {
     private final NoteDao dao;
@@ -72,7 +71,7 @@ public class NoteRepository {
     }
 
     public void upsertLocal(Note note) {
-        note.updatedAt = System.currentTimeMillis();
+        note.updatedAt = Instant.now().getEpochSecond();
         dao.upsert(note);
     }
 
@@ -98,7 +97,7 @@ public class NoteRepository {
 
         try {
             Future<Note> futureNote = this.api.getAsync(title);
-            Note note = futureNote.get(1, TimeUnit.SECONDS);
+            Note note = futureNote.get();
             liveNote.postValue(note);
         } catch (Exception e) {
             e.printStackTrace();
