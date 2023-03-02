@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
 import java.util.List;
@@ -90,13 +91,16 @@ public class NoteRepository {
 
         // Start by fetching the note from the server _once_ and feeding it into MutableLiveData.
         // Then, set up a background thread that will poll the server every 3 seconds.
+        var liveNote = new MutableLiveData<Note>();
 
         var executor = Executors.newSingleThreadExecutor();
         executor.execute(()->{
             try{
+                Log.d("GETECHO","Before ECHO");
                 this.api.echo("test");
+                Log.d("GETECHO","After ECHO");
                 Note note = this.api.get(title);
-                Log.d("GETTEST",note.content);
+                Log.d("GETTEST", note.content);
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -107,8 +111,8 @@ public class NoteRepository {
         // You may (but don't have to) want to cache the LiveData's for each title, so that
         // you don't create a new polling thread every time you call getRemote with the same title.
         // You don't need to worry about killing background threads.
-
-        throw new UnsupportedOperationException("Not implemented yet");
+        return liveNote;
+//        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     public void upsertRemote(Note note) {
