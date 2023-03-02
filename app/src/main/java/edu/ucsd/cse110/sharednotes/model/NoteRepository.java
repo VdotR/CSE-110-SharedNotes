@@ -1,17 +1,22 @@
 package edu.ucsd.cse110.sharednotes.model;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class NoteRepository {
     private final NoteDao dao;
+    private final NoteAPI api;
 
     public NoteRepository(NoteDao dao) {
         this.dao = dao;
+        this.api = NoteAPI.provide();
     }
 
     // Synced Methods
@@ -85,6 +90,19 @@ public class NoteRepository {
 
         // Start by fetching the note from the server _once_ and feeding it into MutableLiveData.
         // Then, set up a background thread that will poll the server every 3 seconds.
+
+        var executor = Executors.newSingleThreadExecutor();
+        executor.execute(()->{
+            try{
+                this.api.echo("test");
+                Note note = this.api.get(title);
+                Log.d("GETTEST",note.content);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+
 
         // You may (but don't have to) want to cache the LiveData's for each title, so that
         // you don't create a new polling thread every time you call getRemote with the same title.

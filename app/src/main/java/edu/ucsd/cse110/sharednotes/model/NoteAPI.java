@@ -41,12 +41,40 @@ public class NoteAPI {
                 .method("GET", null)
                 .build();
 
-        try (var response = client.newCall(request).execute()) {
-            assert response.body() != null;
+        try {
+            var response = client.newCall(request).execute();
+//            assert response.body() != null;
             var body = response.body().string();
             Log.i("ECHO", body);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * An example of sending a GET request to the server.
+     *
+     * The /echo/{msg} endpoint always just returns {"message": msg}.
+     */
+    public Note get (String title) throws Exception {
+        // URLs cannot contain spaces, so we replace them with %20.
+        title = title.replace(" ", "%20");
+
+        var request = new Request.Builder()
+                .url("https://sharednotes.goto.ucsd.edu/notes/" + title)
+                .method("GET", null)
+                .build();
+
+        try{
+            var response = client.newCall(request).execute();
+            //assert response.body() != null;
+            var body = response.body().string();
+            Log.i("GET", body);
+            return Note.fromJSON(body);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
         }
     }
 }
