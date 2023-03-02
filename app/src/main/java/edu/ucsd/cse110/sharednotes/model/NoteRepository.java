@@ -112,7 +112,6 @@ public class NoteRepository {
     }
 
     public void upsertRemote(Note note) {
-        // TODO: Implement upsertRemote!
-        throw new UnsupportedOperationException("Not implemented yet");
+        this.api.putAsync(note.title, note);
     }
 }

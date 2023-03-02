@@ -11,8 +11,10 @@ import com.google.gson.Gson;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 
 public class NoteAPI {
     // TODO: Implement the API using OkHttp!
@@ -74,9 +76,7 @@ public class NoteAPI {
     }
 
     /**
-     * An example of sending a GET request to the server.
-     *
-     * The /echo/{msg} endpoint always just returns {"message": msg}.
+     * GET /notes/{title}
      */
     @WorkerThread
     public Note get (String title) throws Exception {
@@ -104,8 +104,40 @@ public class NoteAPI {
     public Future<Note> getAsync(String title) {
         var executor = Executors.newSingleThreadExecutor();
         var future = executor.submit(() -> get(title));
-
-        // We can use future.get(1, SECONDS) to wait for the result.
         return future;
+    }
+
+    public static final MediaType JSON
+            = MediaType.get("application/json; charset=utf-8");
+
+    /**
+     * PUT /notes/{title}
+     */
+    @WorkerThread
+    public void put(String title, Note note) {
+        // URLs cannot contain spaces, so we replace them with %20.
+        title = title.replace(" ", "%20");
+
+        String jsonBody = note.toJSON();
+        RequestBody reqBody = RequestBody.create(jsonBody, JSON);
+        var request = new Request.Builder()
+                .url("https://sharednotes.goto.ucsd.edu/notes/" + title)
+                .method("PUT", reqBody)
+                .build();
+
+        try {
+            var response = client.newCall(request).execute();
+            assert response.body() != null;
+            var body = response.body().string();
+            Log.i("PUT", body);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @AnyThread
+    public void putAsync(String title, Note note) {
+        var executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> put(title, note));
     }
 }
