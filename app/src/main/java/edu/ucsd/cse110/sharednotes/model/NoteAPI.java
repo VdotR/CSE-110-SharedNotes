@@ -64,11 +64,21 @@ public class NoteAPI {
         }
     }
 
+    @AnyThread
+    public Future<String> echoAsync(String msg) {
+        var executor = Executors.newSingleThreadExecutor();
+        var future = executor.submit(() -> echo(msg));
+
+        // We can use future.get(1, SECONDS) to wait for the result.
+        return future;
+    }
+
     /**
      * An example of sending a GET request to the server.
      *
      * The /echo/{msg} endpoint always just returns {"message": msg}.
      */
+    @WorkerThread
     public Note get (String title) throws Exception {
         // URLs cannot contain spaces, so we replace them with %20.
         title = title.replace(" ", "%20");
@@ -91,9 +101,9 @@ public class NoteAPI {
     }
 
     @AnyThread
-    public Future<String> echoAsync(String msg) {
+    public Future<Note> getAsync(String title) {
         var executor = Executors.newSingleThreadExecutor();
-        var future = executor.submit(() -> echo(msg));
+        var future = executor.submit(() -> get(title));
 
         // We can use future.get(1, SECONDS) to wait for the result.
         return future;

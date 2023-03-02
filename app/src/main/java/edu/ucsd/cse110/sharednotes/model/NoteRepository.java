@@ -9,7 +9,9 @@ import androidx.lifecycle.Observer;
 
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class NoteRepository {
     private final NoteDao dao;
@@ -28,7 +30,7 @@ public class NoteRepository {
      * updated when the note is updated either locally or remotely on the server. Our activities
      * however will only need to observe this one LiveData object, and don't need to care where
      * it comes from!
-     *
+     * <p>
      * This method will always prefer the newest version of the note.
      *
      * @param title the title of the note
@@ -94,19 +96,15 @@ public class NoteRepository {
         // Then, set up a background thread that will poll the server every 3 seconds.
         var liveNote = new MutableLiveData<Note>();
 
-        var executor = Executors.newSingleThreadExecutor();
-        executor.execute(()->{
-            try{
-                Log.d("GETECHO","Before ECHO");
-                this.api.echo("test");
-                Log.d("GETECHO","After ECHO");
-                Note note = this.api.get(title);
-                Log.d("GETTEST", note.content);
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        });
-
+        try {
+            Future<String> futureEchoStr = this.api.echoAsync("AHHHHHHH");
+            String echoStr = futureEchoStr.get();
+            Future<Note> futureNote = this.api.getAsync(title);
+            Note note = futureNote.get();
+            liveNote.postValue(note);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
         // You may (but don't have to) want to cache the LiveData's for each title, so that
