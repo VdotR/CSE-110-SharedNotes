@@ -41,7 +41,7 @@ public class NoteRepository {
 
         Observer<Note> updateFromRemote = theirNote -> {
             var ourNote = note.getValue();
-            if (theirNote == null) return; // do nothing
+            if (theirNote == null || theirNote.title == null || theirNote.content == null) return; // do nothing
             if (ourNote == null || ourNote.updatedAt < theirNote.updatedAt) {
                 upsertLocal(theirNote);
             }
@@ -97,10 +97,8 @@ public class NoteRepository {
         var liveNote = new MutableLiveData<Note>();
 
         try {
-            Future<String> futureEchoStr = this.api.echoAsync("AHHHHHHH");
-            String echoStr = futureEchoStr.get();
             Future<Note> futureNote = this.api.getAsync(title);
-            Note note = futureNote.get();
+            Note note = futureNote.get(1, TimeUnit.SECONDS);
             liveNote.postValue(note);
         } catch (Exception e) {
             e.printStackTrace();

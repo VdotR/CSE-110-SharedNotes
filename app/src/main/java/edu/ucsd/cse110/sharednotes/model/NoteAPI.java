@@ -54,7 +54,7 @@ public class NoteAPI {
 
         try {
             var response = client.newCall(request).execute();
-//            assert response.body() != null;
+            assert response.body() != null;
             var body = response.body().string();
             Log.i("ECHO", body);
             return body;
@@ -88,9 +88,9 @@ public class NoteAPI {
                 .method("GET", null)
                 .build();
 
-        try{
+        try {
             var response = client.newCall(request).execute();
-            //assert response.body() != null;
+            assert response.body() != null;
             var body = response.body().string();
             Log.i("GET", body);
             return Note.fromJSON(body);
