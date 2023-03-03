@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class NoteRepository {
@@ -43,7 +44,7 @@ public class NoteRepository {
         Observer<Note> updateFromRemote = theirNote -> {
             var ourNote = note.getValue();
             if (theirNote == null || theirNote.title == null || theirNote.content == null) return; // do nothing
-            if (ourNote == null || ourNote.updatedAt < theirNote.updatedAt) {
+            if (ourNote == null || ourNote.version < theirNote.version) {
                 upsertLocal(theirNote);
             }
         };
@@ -73,7 +74,7 @@ public class NoteRepository {
     }
 
     public void upsertLocal(Note note) {
-        note.updatedAt = Instant.now().getEpochSecond();
+        note.version = note.version + 1;
         dao.upsert(note);
     }
 
@@ -103,9 +104,10 @@ public class NoteRepository {
             liveNote.postValue(futureNote.get());
 
             // Poll server and update every 3 secs
-            var executor = Executors.newSingleThreadScheduledExecutor();
-            executor.scheduleAtFixedRate(() -> {
-                liveNote.postValue(this.api.get(title));
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            futureNote = (ScheduledFuture<Note>) executor.scheduleAtFixedRate(() -> {
+                Note fetched = this.api.get(title);
+                liveNote.postValue(fetched);
             }, 0, 3000, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             e.printStackTrace();
