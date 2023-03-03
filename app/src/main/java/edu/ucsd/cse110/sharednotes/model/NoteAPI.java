@@ -79,7 +79,7 @@ public class NoteAPI {
      * GET /notes/{title}
      */
     @WorkerThread
-    public Note get (String title) throws Exception {
+    public Note get (String title) {
         // URLs cannot contain spaces, so we replace them with %20.
         title = title.replace(" ", "%20");
 

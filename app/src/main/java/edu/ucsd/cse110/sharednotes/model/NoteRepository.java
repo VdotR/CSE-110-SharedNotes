@@ -9,8 +9,10 @@ import androidx.lifecycle.Observer;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class NoteRepository {
     private final NoteDao dao;
@@ -96,19 +98,20 @@ public class NoteRepository {
         var liveNote = new MutableLiveData<Note>();
 
         try {
+            // Fetch note once, feed to MutableLiveData
             Future<Note> futureNote = this.api.getAsync(title);
-            Note note = futureNote.get();
-            liveNote.postValue(note);
+            liveNote.postValue(futureNote.get());
+
+            // Poll server and update every 3 secs
+            var executor = Executors.newSingleThreadScheduledExecutor();
+            executor.scheduleAtFixedRate(() -> {
+                liveNote.postValue(this.api.get(title));
+            }, 0, 3000, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-
-        // You may (but don't have to) want to cache the LiveData's for each title, so that
-        // you don't create a new polling thread every time you call getRemote with the same title.
-        // You don't need to worry about killing background threads.
         return liveNote;
-//        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     public void upsertRemote(Note note) {
