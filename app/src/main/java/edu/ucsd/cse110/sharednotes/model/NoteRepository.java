@@ -109,6 +109,7 @@ public class NoteRepository {
                 Note fetched = this.api.get(title);
                 liveNote.postValue(fetched);
             }, 0, 3000, TimeUnit.MILLISECONDS);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
